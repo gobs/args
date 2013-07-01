@@ -1,5 +1,11 @@
 package args
 
+/*
+ This package provides methods to parse a shell-like command line string into a list of arguments.
+
+ Words are split on white spaces, respecting quotes (single and double) and the escape character (backslash)
+ */
+
 import (
 	"bufio"
 	"bytes"
