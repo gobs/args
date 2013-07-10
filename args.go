@@ -2,7 +2,7 @@
  This package provides methods to parse a shell-like command line string into a list of arguments.
 
  Words are split on white spaces, respecting quotes (single and double) and the escape character (backslash)
-*/ 
+*/
 package args
 
 import (
@@ -118,5 +118,45 @@ func (this *Scanner) GetTokens() (tokens []string, err error) {
 func GetArgs(line string) (args []string) {
 	scanner := NewScannerString(line)
 	args, _ = scanner.GetTokens()
+	return
+}
+
+type Args struct {
+	Options   map[string]string
+	Arguments []string
+}
+
+func ParseArgs(line string) (parsed Args) {
+	parsed = Args{Options: map[string]string{}, Arguments: []string{}}
+	args := GetArgs(line)
+	if len(args) == 0 {
+		return
+	}
+
+	for len(args) > 0 {
+		arg := args[0]
+
+		if !strings.HasPrefix(arg, "-") {
+			break
+		}
+
+		args = args[1:]
+		if arg == "--" { // stop parsing options
+			break
+		}
+
+		arg = strings.TrimLeft(arg, "-")
+		if strings.Contains(arg, "=") {
+			parts := strings.SplitN(arg, "=", 2)
+			key := parts[0]
+			value := parts[1]
+
+			parsed.Options[key] = value
+		} else {
+			parsed.Options[arg] = ""
+		}
+	}
+
+	parsed.Arguments = args
 	return
 }
