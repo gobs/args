@@ -7,7 +7,7 @@ import (
 
 const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
-	PARSE_STRING = "-l --number=42 -where=here one two three"
+	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three"
 )
 
 func TestScanner(test *testing.T) {
@@ -52,7 +52,7 @@ func ExampleGetArgs() {
 }
 
 func ExampleParseArgs() {
-	arguments := "-l --number=42 -where=here one two three"
+	arguments := "-l --number=42 -where=here -- -not-an-option- one two three"
 
 	parsed := ParseArgs(arguments)
 
@@ -60,5 +60,5 @@ func ExampleParseArgs() {
 	fmt.Println("arguments:", parsed.Arguments)
 	// Output:
 	// options: map[l: number:42 where:here]
-	// arguments: [one two three]
+	// arguments: [-not-an-option- one two three]
 }
