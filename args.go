@@ -8,6 +8,8 @@ package args
 import (
 	"bufio"
 	"bytes"
+	"flag"
+	"fmt"
 	"io"
 	"strings"
 	"unicode"
@@ -159,4 +161,21 @@ func ParseArgs(line string) (parsed Args) {
 
 	parsed.Arguments = args
 	return
+}
+
+// Create a new FlagSet to be used with ParseFlags
+func NewFlags(name string) *flag.FlagSet {
+	flags := flag.NewFlagSet(name, flag.ContinueOnError)
+
+	flags.Usage = func() {
+		fmt.Printf("Usage of %s:\n", name)
+		flags.PrintDefaults()
+	}
+
+	return flags
+}
+
+// Parse the input line through the (initialized) FlagSet
+func ParseFlags(flags *flag.FlagSet, line string) error {
+	return flags.Parse(GetArgs(line))
 }

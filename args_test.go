@@ -62,3 +62,27 @@ func ExampleParseArgs() {
 	// options: map[l: number:42 where:here]
 	// arguments: [-not-an-option- one two three]
 }
+
+func ExampleParseFlags() {
+	arguments := "-l --number=42 -where=here -- -not-an-option- one two three"
+
+	flags := NewFlags("args")
+
+	list := flags.Bool("l", false, "list something")
+	num := flags.Int("number", 0, "a number option")
+	where := flags.String("where", "", "a string option")
+
+	if err := ParseFlags(flags, arguments); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("list:", *list)
+		fmt.Println("num:", *num)
+		fmt.Println("where:", *where)
+		fmt.Println("args:", flags.Args())
+	}
+	// Output:
+	// list: true
+	// num: 42
+	// where: here
+	// args: [-not-an-option- one two three]
+}
