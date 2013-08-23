@@ -31,3 +31,23 @@ You can also "parse" the arguments and divide them in "options" and "parameters"
 
     fmt.Println("options:", parsed.Options)
     fmt.Println("arguments:", parsed.Arguments)
+
+Or parse using flag.FlagSet:
+
+    import "github.com/gobs/args"
+
+    s := "-l --number=42 -where=here -- -not-an-option- one two three"
+    flags := args.NewFlags("test")
+
+    list := flags.Bool("l", false, "list something")
+    num := flags.Int("number", 0, "a number option")
+    where := flags.String("where", "", "a string option")
+
+    flags.Usage()
+
+    args.ParseFlags(flags, s)
+	
+    fmt.Println("list:", *list)
+    fmt.Println("num:", *num)
+    fmt.Println("where:", *where)
+    fmt.Println("args:", flags.Args())
