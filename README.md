@@ -21,3 +21,13 @@ http://godoc.org/github.com/gobs/args
 	for i, arg := range GetArgs(s) {
 		fmt.Println(i, arg)
 	}
+
+You can also "parse" the arguments and divide them in "options" and "parameters":
+
+    import "github.com/gobs/args"
+
+    s := "-l --number=42 -where=here -- -not-an-option- one two three"
+    parsed := ParseArgs(s)
+
+    fmt.Println("options:", parsed.Options)
+    fmt.Println("arguments:", parsed.Arguments)
