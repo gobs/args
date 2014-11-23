@@ -16,7 +16,10 @@ import (
 )
 
 const (
-	NO_QUOTE = unicode.ReplacementChar
+	ESCAPE_CHAR  = '\\'
+	QUOTE_CHARS  = `'"`
+	SYMBOL_CHARS = `|><#{([`
+	NO_QUOTE     = unicode.ReplacementChar
 )
 
 type Scanner struct {
@@ -44,45 +47,78 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 
 	for {
 		if c, _, e := this.in.ReadRune(); e == nil {
-			if unicode.IsSpace(c) && !escape {
-				if first { // skip leading spaces
+			//
+			// check escape character
+			//
+			if c == ESCAPE_CHAR && !escape {
+				escape = true
+				first = false
+				continue
+			}
+
+			//
+			// if escaping, just add the character
+			//
+			if escape {
+				escape = false
+				buf.WriteString(string(c))
+				continue
+			}
+
+			//
+			// checks for beginning of token
+			//
+			if first {
+				if unicode.IsSpace(c) {
+					//
+					// skip leading spaces
+					//
 					continue
 				}
 
-				if quote == NO_QUOTE { // not in quotes
-					s = buf.String()
-					delim = int(c)
-					return // (token, delim, nil)
-				}
-
-				// otherwise we treat it as a regular character
-			}
-
-			if first {
 				first = false
 
-				if c == '"' || c == '\'' {
-					quote = c // we are quoting
-					first = false
+				if strings.ContainsRune(QUOTE_CHARS, c) {
+					//
+					// start quoted token
+					//
+					quote = c
 					continue
 				}
-			}
 
-			if !escape {
-				if c == quote { // close quote
+				if strings.ContainsRune(SYMBOL_CHARS, c) {
+					//
+					// if it's a symbol, return  all the remaining characters
+					//
+					buf.WriteString(string(c))
+					_, err = io.Copy(buf, this.in)
 					s = buf.String()
-					delim = int(c)
-					return // (token, delim, nil)
+					return // (token, delim, err)
 				}
-
-				if /* quote != NO_QUOTE && */ c == '\\' { // escape next
-					escape = true
-					continue
-				}
-			} else {
-				escape = false
 			}
 
+			//
+			// terminate on spaces
+			//
+			if unicode.IsSpace(c) && quote == NO_QUOTE {
+				s = buf.String()
+				delim = int(c)
+				return // (token, delim, nil)
+			}
+
+			//
+			// close quote and terminate
+			//
+			if c == quote {
+				quote = NO_QUOTE
+				s = buf.String()
+				delim = int(c)
+				return // (token, delim, nil)
+			}
+
+			//
+			// append to buffer
+			//
 			buf.WriteString(string(c))
 		} else {
 			if e == io.EOF {

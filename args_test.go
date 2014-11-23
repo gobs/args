@@ -7,7 +7,7 @@ import (
 
 const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
-	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three"
+	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment"
 )
 
 func TestScanner(test *testing.T) {
@@ -20,18 +20,18 @@ func TestScanner(test *testing.T) {
 			break
 		}
 
-		test.Log(delim, token)
+		test.Logf("%q %q", delim, token)
 	}
 }
 
 func TestGetArgs(test *testing.T) {
 
-	test.Log(GetArgs(TEST_STRING))
+	test.Logf("%q", GetArgs(TEST_STRING))
 }
 
 func TestParseArgs(test *testing.T) {
 
-	test.Log(ParseArgs(PARSE_STRING))
+	test.Logf("%q", ParseArgs(PARSE_STRING))
 }
 
 func ExampleGetArgs() {
@@ -52,7 +52,7 @@ func ExampleGetArgs() {
 }
 
 func ExampleParseArgs() {
-	arguments := "-l --number=42 -where=here -- -not-an-option- one two three"
+	arguments := "-l --number=42 -where=here -- -not-an-option- one two three |pipers piping"
 
 	parsed := ParseArgs(arguments)
 
@@ -60,7 +60,7 @@ func ExampleParseArgs() {
 	fmt.Println("arguments:", parsed.Arguments)
 	// Output:
 	// options: map[l: number:42 where:here]
-	// arguments: [-not-an-option- one two three]
+	// arguments: [-not-an-option- one two three |pipers piping]
 }
 
 func ExampleParseFlags() {
