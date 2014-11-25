@@ -17,9 +17,17 @@ import (
 
 const (
 	ESCAPE_CHAR  = '\\'
-	QUOTE_CHARS  = `'"`
+	QUOTE_CHARS  = "`'\""
 	SYMBOL_CHARS = `|><#{([`
 	NO_QUOTE     = unicode.ReplacementChar
+)
+
+var (
+	BRACKETS = map[rune]rune{
+		'{': '}',
+		'[': ']',
+		'(': ')',
+	}
 )
 
 type Scanner struct {
