@@ -51,7 +51,8 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 	buf := bytes.NewBufferString("")
 	first := true
 	escape := false
-	quote := NO_QUOTE // invalid character - not a quote
+	quote := NO_QUOTE    // invalid character - not a quote
+	brackets := []rune{} // stack of open brackets
 
 	for {
 		if c, _, e := this.in.ReadRune(); e == nil {
@@ -94,6 +95,16 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 					continue
 				}
 
+				if b, ok := BRACKETS[c]; ok {
+					//
+					// start a bracketed session
+					//
+					delim = int(c)
+					brackets = append(brackets, b)
+					buf.WriteString(string(c))
+					continue
+				}
+
 				if strings.ContainsRune(SYMBOL_CHARS, c) {
 					//
 					// if it's a symbol, return  all the remaining characters
@@ -105,29 +116,58 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 				}
 			}
 
-			//
-			// terminate on spaces
-			//
-			if unicode.IsSpace(c) && quote == NO_QUOTE {
-				s = buf.String()
-				delim = int(c)
-				return // (token, delim, nil)
-			}
+			if len(brackets) == 0 {
+				//
+				// terminate on spaces
+				//
+				if unicode.IsSpace(c) && quote == NO_QUOTE {
+					s = buf.String()
+					delim = int(c)
+					return // (token, delim, nil)
+				}
 
-			//
-			// close quote and terminate
-			//
-			if c == quote {
-				quote = NO_QUOTE
-				s = buf.String()
-				delim = int(c)
-				return // (token, delim, nil)
-			}
+				//
+				// close quote and terminate
+				//
+				if c == quote {
+					quote = NO_QUOTE
+					s = buf.String()
+					delim = int(c)
+					return // (token, delim, nil)
+				}
 
-			//
-			// append to buffer
-			//
-			buf.WriteString(string(c))
+				//
+				// append to buffer
+				//
+				buf.WriteString(string(c))
+			} else {
+				//
+				// append to buffer
+				//
+				buf.WriteString(string(c))
+
+				last := len(brackets) - 1
+
+				if quote == NO_QUOTE {
+					if c == brackets[last] {
+						brackets = brackets[:last] // pop
+
+						if len(brackets) == 0 {
+							s = buf.String()
+							return // (token, delim, nil)
+						}
+					} else if strings.ContainsRune(QUOTE_CHARS, c) {
+						//
+						// start quoted token
+						//
+						quote = c
+					} else if b, ok := BRACKETS[c]; ok {
+						brackets = append(brackets, b)
+					}
+				} else if c == quote {
+					quote = NO_QUOTE
+				}
+			}
 		} else {
 			if e == io.EOF {
 				if buf.Len() > 0 {

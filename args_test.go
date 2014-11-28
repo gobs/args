@@ -8,6 +8,8 @@ import (
 const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
 	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment"
+
+	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}}`
 )
 
 func TestScanner(test *testing.T) {
@@ -32,6 +34,13 @@ func TestGetArgs(test *testing.T) {
 func TestParseArgs(test *testing.T) {
 
 	test.Logf("%q", ParseArgs(PARSE_STRING))
+}
+
+func TestBrackets(test *testing.T) {
+
+	for i, a := range GetArgs(TEST_BRACKETS) {
+		fmt.Println(i, a)
+	}
 }
 
 func ExampleGetArgs() {
