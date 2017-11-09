@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -252,6 +253,21 @@ func GetOptions(line string) (options []string, rest string) {
 type Args struct {
 	Options   map[string]string
 	Arguments []string
+}
+
+func (a Args) GetOption(name, def string) string {
+	if val, ok := a.Options[name]; ok {
+		return val
+	}
+	return def
+}
+
+func (a Args) GetIntOption(name string, def int) int {
+	if val, ok := a.Options[name]; ok {
+		n, _ := strconv.Atoi(val)
+		return n
+	}
+	return def
 }
 
 func ParseArgs(line string) (parsed Args) {
