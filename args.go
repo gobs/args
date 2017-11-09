@@ -11,12 +11,14 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 	"unicode"
 )
 
 const (
 	ESCAPE_CHAR  = '\\'
+	OPTION_CHAR  = '-'
 	QUOTE_CHARS  = "`'\""
 	SYMBOL_CHARS = `|><#{([`
 	NO_QUOTE     = unicode.ReplacementChar
@@ -47,7 +49,7 @@ func NewScannerString(s string) *Scanner {
 }
 
 // Get the next token from the Scanner, return io.EOF when done
-func (this *Scanner) NextToken() (s string, delim int, err error) {
+func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 	buf := bytes.NewBufferString("")
 	first := true
 	escape := false
@@ -55,7 +57,7 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 	brackets := []rune{} // stack of open brackets
 
 	for {
-		if c, _, e := this.in.ReadRune(); e == nil {
+		if c, _, e := scanner.in.ReadRune(); e == nil {
 			//
 			// check escape character
 			//
@@ -110,7 +112,7 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 					// if it's a symbol, return  all the remaining characters
 					//
 					buf.WriteString(string(c))
-					_, err = io.Copy(buf, this.in)
+					_, err = io.Copy(buf, scanner.in)
 					s = buf.String()
 					return // (token, delim, err)
 				}
@@ -184,26 +186,66 @@ func (this *Scanner) NextToken() (s string, delim int, err error) {
 }
 
 // Return all tokens as an array of strings
-func (this *Scanner) GetTokens() (tokens []string, err error) {
+func (scanner *Scanner) GetTokens() (tokens []string, err error) {
+	tokens, _, err = scanner.getTokens(false)
+	return
+}
 
-	tokens = make([]string, 0, 10) // an arbitrary initial capacity
+// Return all "option" tokens (tokens that start with "-") and remainder of the line
+func (scanner *Scanner) GetOptionTokens() (tokens []string, rest string, err error) {
+	return scanner.getTokens(true)
+}
+
+func (scanner *Scanner) getTokens(options bool) ([]string, string, error) {
+	var tokens []string
 
 	for {
-		tok, _, err := this.NextToken()
+		if options {
+			for {
+				c, _, err := scanner.in.ReadRune()
+				if err == io.EOF {
+					return tokens, "", nil
+				}
+				if err != nil {
+					return tokens, "", err
+				}
+
+				if c == OPTION_CHAR {
+					scanner.in.UnreadRune()
+					break
+				}
+
+				if !unicode.IsSpace(c) {
+					scanner.in.UnreadRune()
+					rest, err := ioutil.ReadAll(scanner.in)
+					return tokens, string(rest), err
+				}
+
+				// skipping spaces until next token
+			}
+		}
+
+		tok, _, err := scanner.NextToken()
 		if err != nil {
-			break
+			return tokens, "", err
 		}
 
 		tokens = append(tokens, tok)
 	}
 
-	return
+	return tokens, "", nil
 }
 
 // Parse the input line into an array of arguments
 func GetArgs(line string) (args []string) {
 	scanner := NewScannerString(line)
 	args, _ = scanner.GetTokens()
+	return
+}
+
+func GetOptions(line string) (options []string, rest string) {
+	scanner := NewScannerString(line)
+	options, rest, _ = scanner.GetOptionTokens()
 	return
 }
 

@@ -31,6 +31,12 @@ func TestGetArgs(test *testing.T) {
 	test.Logf("%q", GetArgs(TEST_STRING))
 }
 
+func TestGetOptions(test *testing.T) {
+
+	options, rest := GetOptions(PARSE_STRING)
+	test.Logf("%q %q", options, rest)
+}
+
 func TestParseArgs(test *testing.T) {
 
 	test.Logf("%q", ParseArgs(PARSE_STRING))
