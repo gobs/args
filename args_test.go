@@ -7,7 +7,7 @@ import (
 
 const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
-	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment"
+	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment \n next line"
 
 	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}}`
 )
@@ -29,6 +29,12 @@ func TestScanner(test *testing.T) {
 func TestGetArgs(test *testing.T) {
 
 	test.Logf("%q", GetArgs(TEST_STRING))
+}
+
+func TestGetArgsN(test *testing.T) {
+
+	args, rest := GetArgsN(TEST_STRING, 3)
+	test.Logf("%q %q", args, rest)
 }
 
 func TestGetOptions(test *testing.T) {

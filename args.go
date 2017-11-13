@@ -188,19 +188,26 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 
 // Return all tokens as an array of strings
 func (scanner *Scanner) GetTokens() (tokens []string, err error) {
-	tokens, _, err = scanner.getTokens(false)
+	tokens, _, err = scanner.getTokens(0)
+	return
+}
+
+func (scanner *Scanner) GetTokensN(n int) (tokens []string, rest string, err error) {
+	tokens, rest, err = scanner.getTokens(n)
 	return
 }
 
 // Return all "option" tokens (tokens that start with "-") and remainder of the line
 func (scanner *Scanner) GetOptionTokens() (tokens []string, rest string, err error) {
-	return scanner.getTokens(true)
+	return scanner.getTokens(-1)
 }
 
-func (scanner *Scanner) getTokens(options bool) ([]string, string, error) {
+func (scanner *Scanner) getTokens(max int) ([]string, string, error) {
 	var tokens []string
 
-	for {
+	options := max < 0
+
+	for i := 0; max <= 0 || i < max; i++ {
 		if options {
 			for {
 				c, _, err := scanner.in.ReadRune()
@@ -234,13 +241,24 @@ func (scanner *Scanner) getTokens(options bool) ([]string, string, error) {
 		tokens = append(tokens, tok)
 	}
 
-	return tokens, "", nil
+	rest, err := ioutil.ReadAll(scanner.in)
+	if err == io.EOF {
+		err = nil
+	}
+	return tokens, strings.TrimSpace(string(rest)), err
 }
 
 // Parse the input line into an array of arguments
 func GetArgs(line string) (args []string) {
 	scanner := NewScannerString(line)
-	args, _ = scanner.GetTokens()
+	args, _, _ = scanner.GetTokensN(0)
+	return
+}
+
+// Parse the input line into an array of max n arguments
+func GetArgsN(line string, n int) (args []string, rest string) {
+	scanner := NewScannerString(line)
+	args, rest, _ = scanner.GetTokensN(n)
 	return
 }
 
