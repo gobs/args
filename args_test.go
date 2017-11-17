@@ -33,8 +33,8 @@ func TestGetArgs(test *testing.T) {
 
 func TestGetArgsN(test *testing.T) {
 
-	args, rest := GetArgsN(TEST_STRING, 3)
-	test.Logf("%q %q", args, rest)
+	args := GetArgsN(TEST_STRING, 3)
+	test.Logf("%q", args)
 }
 
 func TestGetOptions(test *testing.T) {
