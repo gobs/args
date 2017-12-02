@@ -9,11 +9,26 @@ const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
 	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment \n next line"
 
-	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}}`
+	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}} x={"value":"with brakets", a=[1, "2", 3.14, {"another": "field"}]}`
 )
 
 func TestScanner(test *testing.T) {
 	scanner := NewScannerString(TEST_STRING)
+
+	for {
+		token, delim, err := scanner.NextToken()
+		if err != nil {
+			test.Log(err)
+			break
+		}
+
+		test.Logf("%q %q", delim, token)
+	}
+}
+
+func TestScannerInfieldBrackets(test *testing.T) {
+	scanner := NewScannerString(TEST_BRACKETS)
+	scanner.InfieldBrackets = true
 
 	for {
 		token, delim, err := scanner.NextToken()
@@ -51,6 +66,13 @@ func TestParseArgs(test *testing.T) {
 func TestBrackets(test *testing.T) {
 
 	for i, a := range GetArgs(TEST_BRACKETS) {
+		fmt.Println(i, a)
+	}
+}
+
+func TestBracketsInfield(test *testing.T) {
+
+	for i, a := range GetArgs(TEST_BRACKETS, InfieldBrackets()) {
 		fmt.Println(i, a)
 	}
 }

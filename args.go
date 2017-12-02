@@ -34,7 +34,8 @@ var (
 )
 
 type Scanner struct {
-	in *bufio.Reader
+	in              *bufio.Reader
+	InfieldBrackets bool
 }
 
 // Creates a new Scanner with io.Reader as input source
@@ -137,6 +138,15 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 					s = buf.String()
 					delim = int(c)
 					return // (token, delim, nil)
+				}
+
+				if scanner.InfieldBrackets {
+					if b, ok := BRACKETS[c]; ok {
+						//
+						// start a bracketed session
+						//
+						brackets = append(brackets, b)
+					}
 				}
 
 				//
@@ -247,16 +257,36 @@ func (scanner *Scanner) getTokens(max int) ([]string, string, error) {
 	return tokens, strings.TrimSpace(string(rest)), err
 }
 
-// Parse the input line into an array of arguments
-func GetArgs(line string) (args []string) {
+// GetArgsOption is the type for GetArgs options
+type GetArgsOption func(s *Scanner)
+
+// InfieldBrackets enable processing of in-field brackets (i.e. name={"values in brackets"})
+func InfieldBrackets() GetArgsOption {
+	return func(s *Scanner) {
+		s.InfieldBrackets = true
+	}
+}
+
+func getScanner(line string, options ...GetArgsOption) *Scanner {
 	scanner := NewScannerString(line)
+
+	for _, option := range options {
+		option(scanner)
+	}
+
+	return scanner
+}
+
+// Parse the input line into an array of arguments
+func GetArgs(line string, options ...GetArgsOption) (args []string) {
+	scanner := getScanner(line, options...)
 	args, _, _ = scanner.GetTokensN(0)
 	return
 }
 
 // Parse the input line into an array of max n arguments
-func GetArgsN(line string, n int) []string {
-	scanner := NewScannerString(line)
+func GetArgsN(line string, n int, options ...GetArgsOption) []string {
+	scanner := getScanner(line, options...)
 	if n > 0 {
 		n = n - 1
 	}
@@ -267,8 +297,8 @@ func GetArgsN(line string, n int) []string {
 	return args
 }
 
-func GetOptions(line string) (options []string, rest string) {
-	scanner := NewScannerString(line)
+func GetOptions(line string, scanOptions ...GetArgsOption) (options []string, rest string) {
+	scanner := getScanner(line, scanOptions...)
 	options, rest, _ = scanner.GetOptionTokens()
 	return
 }
