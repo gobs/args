@@ -212,7 +212,7 @@ func (scanner *Scanner) GetOptionTokens() ([]string, string, error) {
 }
 
 func (scanner *Scanner) getTokens(max int) ([]string, string, error) {
-	var tokens []string
+	tokens := []string{}
 
 	options := max < 0
 
