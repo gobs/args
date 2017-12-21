@@ -135,12 +135,22 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 				//
 				if c == quote {
 					quote = NO_QUOTE
+					if scanner.InfieldBrackets {
+						buf.WriteString(string(c))
+					}
 					s = buf.String()
 					delim = int(c)
 					return // (token, delim, nil)
 				}
 
 				if scanner.InfieldBrackets {
+					if quote == NO_QUOTE && strings.ContainsRune(QUOTE_CHARS, c) {
+						//
+						// start quoted token
+						//
+						quote = c
+					}
+
 					if b, ok := BRACKETS[c]; ok {
 						//
 						// start a bracketed session

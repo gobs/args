@@ -10,6 +10,8 @@ const (
 	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment \n next line"
 
 	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}} x={"value":"with brakets", a=[1, "2", 3.14, {"another": "field"}]}`
+
+	TEST_INFIELD = `a=1 b=2 c={"one": 2.0} d=[1, 2, 3], e=["x", "y"], q="quoted" qe="\"quoted and escaped\"" qe='"quote in quotes"'`
 )
 
 func TestScanner(test *testing.T) {
@@ -27,7 +29,7 @@ func TestScanner(test *testing.T) {
 }
 
 func TestScannerInfieldBrackets(test *testing.T) {
-	scanner := NewScannerString(TEST_BRACKETS)
+	scanner := NewScannerString(TEST_INFIELD)
 	scanner.InfieldBrackets = true
 
 	for {
@@ -72,7 +74,7 @@ func TestBrackets(test *testing.T) {
 
 func TestBracketsInfield(test *testing.T) {
 
-	for i, a := range GetArgs(TEST_BRACKETS, InfieldBrackets()) {
+	for i, a := range GetArgs(TEST_INFIELD, InfieldBrackets()) {
 		fmt.Println(i, a)
 	}
 }
