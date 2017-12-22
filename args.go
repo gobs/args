@@ -23,6 +23,7 @@ const (
 	QUOTE_CHARS  = "`'\""
 	SYMBOL_CHARS = `|><#{([`
 	NO_QUOTE     = unicode.ReplacementChar
+	RAW_QUOTE    = '`'
 )
 
 var (
@@ -55,6 +56,8 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 	buf := bytes.NewBufferString("")
 	first := true
 	escape := false
+	rawq := false
+	infield := false
 	quote := NO_QUOTE    // invalid character - not a quote
 	brackets := []rune{} // stack of open brackets
 
@@ -63,7 +66,7 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 			//
 			// check escape character
 			//
-			if c == ESCAPE_CHAR && !escape {
+			if c == ESCAPE_CHAR && !escape && !rawq {
 				escape = true
 				first = false
 				continue
@@ -96,6 +99,7 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 					// start quoted token
 					//
 					quote = c
+					rawq = c == RAW_QUOTE
 					continue
 				}
 
@@ -135,7 +139,8 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 				//
 				if c == quote {
 					quote = NO_QUOTE
-					if scanner.InfieldBrackets {
+					rawq = false
+					if infield {
 						buf.WriteString(string(c))
 					}
 					s = buf.String()
@@ -144,18 +149,21 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 				}
 
 				if scanner.InfieldBrackets {
-					if quote == NO_QUOTE && strings.ContainsRune(QUOTE_CHARS, c) {
-						//
-						// start quoted token
-						//
-						quote = c
-					}
-
 					if b, ok := BRACKETS[c]; ok {
 						//
 						// start a bracketed session
 						//
 						brackets = append(brackets, b)
+						infield = true
+					}
+
+					if quote == NO_QUOTE && strings.ContainsRune(QUOTE_CHARS, c) {
+						//
+						// start quoted token
+						//
+						quote = c
+						rawq = c == RAW_QUOTE
+						infield = true
 					}
 				}
 
@@ -184,11 +192,13 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 						// start quoted token
 						//
 						quote = c
+						rawq = c == RAW_QUOTE
 					} else if b, ok := BRACKETS[c]; ok {
 						brackets = append(brackets, b)
 					}
 				} else if c == quote {
 					quote = NO_QUOTE
+					rawq = false
 				}
 			}
 		} else {

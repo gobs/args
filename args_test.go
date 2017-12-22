@@ -11,7 +11,7 @@ const (
 
 	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}} x={"value":"with brakets", a=[1, "2", 3.14, {"another": "field"}]}`
 
-	TEST_INFIELD = `a=1 b=2 c={"one": 2.0} d=[1, 2, 3], e=["x", "y"], q="quoted" qe="\"quoted and escaped\"" qe='"quote in quotes"'`
+	TEST_INFIELD = `a=1 b=2 c={"one": 2.0} d=[1, 2, 3], e=["x", "y"], q="quoted" qe="\"quoted and escaped\"" qe='"quote in quotes"'` + " `\"raw string \\'quoted\\'\"` qr=`\"raw string \\'quoted\\'\"`"
 )
 
 func TestScanner(test *testing.T) {
