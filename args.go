@@ -345,6 +345,10 @@ func (a Args) GetIntOption(name string, def int) int {
 
 func (a Args) GetBoolOption(name string, def bool) bool {
 	if val, ok := a.Options[name]; ok {
+                if val == "" { // --boolopt is the same as --boolopt=true
+                    return true
+                }
+
 		b, _ := strconv.ParseBool(val)
 		return b
 	}
