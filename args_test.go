@@ -43,6 +43,31 @@ func TestScannerInfieldBrackets(test *testing.T) {
 	}
 }
 
+func TestScannerDots(test *testing.T) {
+	scanner := NewScannerString(`a."b".'c'.[some]`)
+
+	res := []string{}
+
+	for {
+		token, delim, err := scanner.NextToken()
+		if err != nil {
+			test.Log(err)
+			break
+		}
+
+		res = append(res, token)
+		if delim != '.' {
+			test.Logf("delimiter: %q", delim)
+			break
+		}
+	}
+
+	var rest [64]byte
+	n, _ := scanner.in.Read(rest[:])
+
+	test.Log("tokens:", res, "remain:", string(rest[:n]))
+}
+
 func TestGetArgs(test *testing.T) {
 
 	test.Logf("%q", GetArgs(TEST_STRING))
@@ -52,6 +77,21 @@ func TestGetArgsN(test *testing.T) {
 
 	args := GetArgsN(TEST_STRING, 3)
 	test.Logf("%q", args)
+}
+
+func TestGetArgsN2(test *testing.T) {
+
+	args := GetArgsN("x", 1)
+	test.Logf("asked 1 expected 1 got %q", args)
+
+	args = GetArgsN("x", 2)
+	test.Logf("asked 2 expected 1 got %q", args)
+
+	args = GetArgsN("x y", 2)
+	test.Logf("asked 2 expected 2 got %q", args)
+
+	args = GetArgsN("x y z", 2)
+	test.Logf("asked 2 expected 2 got %q", args)
 }
 
 func TestGetOptions(test *testing.T) {

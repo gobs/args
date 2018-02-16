@@ -343,6 +343,14 @@ func (a Args) GetIntOption(name string, def int) int {
 	return def
 }
 
+func (a Args) GetBoolOption(name string, def bool) bool {
+	if val, ok := a.Options[name]; ok {
+		b, _ := strconv.ParseBool(val)
+		return b
+	}
+	return def
+}
+
 func ParseArgs(line string) (parsed Args) {
 	parsed = Args{Options: map[string]string{}, Arguments: []string{}}
 	args := GetArgs(line)
