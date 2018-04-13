@@ -75,8 +75,14 @@ func TestGetArgs(test *testing.T) {
 
 func TestGetArgsN(test *testing.T) {
 
-	args := GetArgsN(TEST_STRING, 3)
-	test.Logf("%q", args)
+	args := GetArgsN(TEST_STRING, 1)
+	test.Logf("%d, %q", len(args), args)
+
+	args = GetArgsN(TEST_STRING, 2)
+	test.Logf("%d, %q", len(args), args)
+
+	args = GetArgsN(TEST_STRING, 3)
+	test.Logf("%d, %q", len(args), args)
 }
 
 func TestGetArgsN2(test *testing.T) {
@@ -115,6 +121,13 @@ func TestBrackets(test *testing.T) {
 func TestBracketsInfield(test *testing.T) {
 
 	for i, a := range GetArgs(TEST_INFIELD, InfieldBrackets()) {
+		fmt.Println(i, a)
+	}
+}
+
+func TestUserTokens(test *testing.T) {
+
+	for i, a := range GetArgs(TEST_INFIELD+" X = Y", UserTokens("=")) {
 		fmt.Println(i, a)
 	}
 }
