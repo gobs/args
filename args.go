@@ -70,6 +70,10 @@ func (scanner *Scanner) NextToken() (s string, delim int, err error) {
 			if c == ESCAPE_CHAR && !escape && !rawq {
 				escape = true
 				first = false
+
+                                if infield {
+				    buf.WriteString(string(c))
+                                }
 				continue
 			}
 
@@ -378,9 +382,9 @@ func (a Args) GetBoolOption(name string, def bool) bool {
 	return def
 }
 
-func ParseArgs(line string) (parsed Args) {
+func ParseArgs(line string, options ...GetArgsOption) (parsed Args) {
 	parsed = Args{Options: map[string]string{}, Arguments: []string{}}
-	args := GetArgs(line)
+	args := GetArgs(line, options...)
 	if len(args) == 0 {
 		return
 	}

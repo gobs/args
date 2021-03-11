@@ -7,11 +7,11 @@ import (
 
 const (
 	TEST_STRING  = `the   quick 	  "brown  'fox'"  jumps 'o v e r' \"the\"\ lazy dog`
-	PARSE_STRING = "-l --number=42 -where=here -- -not-an-option- one two three # a comment \n next line"
+	PARSE_STRING = "-l --number=42 -where=here --where=there -- -not-an-option- one two three # a comment \n next line"
 
 	TEST_BRACKETS = `some stuff in "quotes" and {"brackets":[1, 'help', (2+3)]} {{"a":1,"b":2},{"c":3}} x={"value":"with brakets", a=[1, "2", 3.14, {"another": "field"}]}`
 
-	TEST_INFIELD = `a=1 b=2 c={"one": 2.0} d=[1, 2, 3], e=["x", "y"], q="quoted" qe="\"quoted and escaped\"" qe='"quote in quotes"'` + " `\"raw string \\'quoted\\'\"` qr=`\"raw string \\'quoted\\'\"`"
+	TEST_INFIELD = `a=1 b=2 c={"one": 2.0} d=[1, 2, 3], e=["x", "y"], q="quoted" qe="\"quoted and escaped\"" qe='"quote in quotes"'` + " `\"raw string \\'quoted\\'\"` qr=`\"raw string \\'quoted\\'\"`" + ` {"q":"\"quoted value\""}`
 )
 
 func TestScanner(test *testing.T) {
